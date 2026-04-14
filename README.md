@@ -14,7 +14,7 @@ Aquí podrás encontrar distintos ejercicios y exámenes que cubren temas como:
 
 ## Objetivo
 
-El objetivo de este repositorio es servir como referencia tanto para mí como para otras personas que estén aprendiendo PHP y a las cuales Miguel Ángel está partiendo por la mitad (Miguel si lees esto tk)
+El objetivo de este repositorio es servir como referencia tanto para mí como para otras personas que estén aprendiendo PHP y a las cuales Miguel Ángel esté partiendo por la mitad (Miguel si lees esto tk).
 
 ##  Para quien lo necesite
 
@@ -31,5 +31,4 @@ Estos ejercicios pueden contener errores o formas mejorables de hacer las cosas,
 Puedes usar este contenido como guía o referencia, pero intenta siempre comprender el código y no solo copiarlo :)
 
 ---
-
-✨ ¡Gracias por pasarte por el repositorio y mucho éxito con PHP!
+Gracias por pasarte por el repositorio y mucho éxito con PHP y 2ºDAW!!!!
