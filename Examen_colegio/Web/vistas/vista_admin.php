@@ -220,9 +220,9 @@ if (isset($_SESSION["alumno"])) {
 
                     if ($editando) {
                         echo "<input type='hidden' name='nuevaNota' id='inputNota' value=''>";
-                        echo "<button class='enlace' type='submit' name='btnCambiar' value='" . $nota['cod_asig'] . "' onclick='document.getElementById(\"inputNota\").value=document.getElementById(\"nuevaNota\").value;'>Cambiar</button>";
+                        echo "<button class='enlace' type='submit' name='btnCambiar' value='" . $nota['cod_asig'] . "'>Cambiar</button>";
                         echo "&nbsp;";
-                        echo "<button class='enlace' type='submit' name='btnAtras' value='1'>Atrás</button>";
+                        echo "<button class='enlace' type='submit' name='btnAtras'>Atrás</button>";
                     } else {
                         echo "<button class='enlace' type='submit' name='btnQuitar' value='" . $nota['cod_asig'] . "'>Quitar</button>";
                         echo "&nbsp;";
