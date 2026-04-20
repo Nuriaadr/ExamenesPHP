@@ -25,12 +25,27 @@ $app->post('/login', function ($request) {
     echo json_encode(login($datos_login));
 });
 
-$app->get('/notasAlumno/{cod_alu}', function ($request) {
+$app->get('/notasAlumno/{id_alumno}', function ($request) {
+
     $test = validateToken();
     if (is_array($test)) {
-        if (isset($test["usuario"])) {
-            $id_alumno = $request->getAttribute("cod_alu");
+        if (isset($test['usuario'])) {
+            $id_alumno = $request->getAttribute('id_alumno');
             echo json_encode(notasAlumno($id_alumno));
+        } else {
+            echo json_encode($test);
+        }
+    } else
+        echo json_encode(array("no_auth" => "No tienes permiso para usar el servicio"));
+});
+
+$app->get('/notasNoEvalAlumno/{id_alumno}', function ($request) {
+
+    $test = validateToken();
+    if (is_array($test)) {
+        if (isset($test['usuario'])) {
+            $id_alumno = $request->getAttribute('id_alumno');
+            echo json_encode(notasNoEvalAlumno($id_alumno));
         } else {
             echo json_encode($test);
         }
@@ -41,12 +56,12 @@ $app->get('/notasAlumno/{cod_alu}', function ($request) {
 $app->get('/alumnos', function () {
     $test = validateToken();
     if (is_array($test)) {
-        if (isset($test["usuario"])) {
-            if ($test["usuario"]["tipo"] == 'tutor') {
+        if (isset($test['usuario'])) {
+            if (isset($test['usuario']) && $test['usuario']['tipo'] == 'tutor') {
+
                 echo json_encode(alumnos());
-            } else {
+            } else
                 echo json_encode(array("no_auth" => "No tienes permiso para usar el servicio"));
-            }
         } else {
             echo json_encode($test);
         }
@@ -54,17 +69,17 @@ $app->get('/alumnos', function () {
         echo json_encode(array("no_auth" => "No tienes permiso para usar el servicio"));
 });
 
+$app->delete('/borrarNota/{id_alumno}/{id_asignatura}', function ($request) {
 
-$app->get('/notasNoEvalAlumno/{cod_alu}', function ($request) {
     $test = validateToken();
     if (is_array($test)) {
-        if (isset($test["usuario"])) {
-            if ($test["usuario"]["tipo"] == 'tutor') {
-                $id_alumno = $request->getAttribute("cod_alu");
-                echo json_encode(notasNoEvalAlumno($id_alumno));
-            } else {
+        if (isset($test['usuario'])) {
+            if (isset($test['usuario']) && $test['usuario']['tipo'] == 'tutor') {
+                $id_alumno = $request->getAttribute('id_alumno');
+                $id_asignatura = $request->getAttribute('id_asignatura');
+                echo json_encode(borrarNota($id_alumno, $id_asignatura));
+            } else
                 echo json_encode(array("no_auth" => "No tienes permiso para usar el servicio"));
-            }
         } else {
             echo json_encode($test);
         }
@@ -72,18 +87,17 @@ $app->get('/notasNoEvalAlumno/{cod_alu}', function ($request) {
         echo json_encode(array("no_auth" => "No tienes permiso para usar el servicio"));
 });
 
+$app->post('/calificarNota/{id_alumno}/{id_asignatura}', function ($request) {
 
-$app->post('/ponerNota/{cod_alu}', function ($request) {
     $test = validateToken();
     if (is_array($test)) {
-        if (isset($test["usuario"])) {
-            if ($test["usuario"]["tipo"] == 'tutor') {
-                $datos_nota[] = $request->getAttribute("cod_alu");
-                $datos_nota[] = $request->getParam("cod_asig");
-                echo json_encode(ponerNota($datos_nota));
-            } else {
+        if (isset($test['usuario'])) {
+            if (isset($test['usuario']) && $test['usuario']['tipo'] == 'tutor') {
+                $id_alumno = $request->getAttribute('id_alumno');
+                $id_asignatura = $request->getAttribute('id_asignatura');
+                echo json_encode(calificar($id_alumno, $id_asignatura));
+            } else
                 echo json_encode(array("no_auth" => "No tienes permiso para usar el servicio"));
-            }
         } else {
             echo json_encode($test);
         }
@@ -91,36 +105,18 @@ $app->post('/ponerNota/{cod_alu}', function ($request) {
         echo json_encode(array("no_auth" => "No tienes permiso para usar el servicio"));
 });
 
-$app->delete('/quitarNota/{cod_alu}', function ($request) {
-    $test = validateToken();
-    if (is_array($test)) {
-        if (isset($test["usuario"])) {
-            if ($test["usuario"]["tipo"] == 'tutor') {
-                $datos_nota[] = $request->getAttribute("cod_alu");
-                $datos_nota[] = $request->getParam("cod_asig");
-                echo json_encode(quitarNota($datos_nota));
-            } else {
-                echo json_encode(array("no_auth" => "No tienes permiso para usar el servicio"));
-            }
-        } else {
-            echo json_encode($test);
-        }
-    } else
-        echo json_encode(array("no_auth" => "No tienes permiso para usar el servicio"));
-});
+$app->put('/cambiarNota/{id_usuario}/{id_asignatura}/{nota}', function ($request) {
 
-$app->put('/cambiarNota/{cod_alu}', function ($request) {
     $test = validateToken();
     if (is_array($test)) {
-        if (isset($test["usuario"])) {
-            if ($test["usuario"]["tipo"] == 'tutor') {
-                $datos_nota[] = $request->getAttribute("cod_alu");
-                $datos_nota[] = $request->getParam("cod_asig");
-                $datos_nota[] = $request->getParam("nota");
-                echo json_encode(cambiarNota($datos_nota));
-            } else {
+        if (isset($test['usuario'])) {
+            if (isset($test['usuario']) && $test['usuario']['tipo'] == 'tutor') {
+                $id_alumno = $request->getAttribute('id_usuario');
+                $id_asignatura = $request->getAttribute('id_asignatura');
+                $nota = $request->getAttribute('nota');
+                echo json_encode(cambiarNota($id_alumno, $id_asignatura, $nota));
+            } else
                 echo json_encode(array("no_auth" => "No tienes permiso para usar el servicio"));
-            }
         } else {
             echo json_encode($test);
         }

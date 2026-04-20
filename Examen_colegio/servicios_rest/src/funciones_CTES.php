@@ -98,7 +98,7 @@ function login($datos_login)
     return $respuesta;
 }
 
-function alumnos()
+function notasAlumno($id_usuario)
 {
     try {
         $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
@@ -107,6 +107,36 @@ function alumnos()
         return $respuesta;
     }
 
+    try {
+        $consulta = "select asignaturas.cod_asig, asignaturas.denominacion, notas.nota from asignaturas join notas on asignaturas.cod_asig = notas.cod_asig where cod_usu=?";
+        $sentencia = $conexion->prepare($consulta);
+        $sentencia->execute([$id_usuario]);
+    } catch (PDOException $e) {
+        $sentencia = null;
+        $conexion = null;
+        $respuesta["error"] = "No he podido realizarse la consulta: " . $e->getMessage();
+        return $respuesta;
+    }
+
+    if ($sentencia->rowCount() > 0) {
+        $respuesta["notas_alum"] = $sentencia->fetchAll(PDO::FETCH_ASSOC);
+    } else
+        $respuesta["mensaje"] = "El usuario no tiene notas en la BD";
+
+    $sentencia = null;
+    $conexion = null;
+    return $respuesta;
+}
+
+
+function alumnos()
+{
+    try {
+        $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
+    } catch (PDOException $e) {
+        $respuesta["error"] = "No he podido conectarse a la base de batos: " . $e->getMessage();
+        return $respuesta;
+    }
     try {
         $consulta = "select * from usuarios where tipo='alumno'";
         $sentencia = $conexion->prepare($consulta);
@@ -117,42 +147,10 @@ function alumnos()
         $respuesta["error"] = "No he podido realizarse la consulta: " . $e->getMessage();
         return $respuesta;
     }
-
     if ($sentencia->rowCount() > 0) {
         $respuesta["alumnos"] = $sentencia->fetchAll(PDO::FETCH_ASSOC);
     } else
-        $respuesta["mensaje"] = "No hay alumnos en la BD";
-
-    $sentencia = null;
-    $conexion = null;
-    return $respuesta;
-}
-
-function notasAlumno($id_alumno)
-{
-
-    try {
-        $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
-    } catch (PDOException $e) {
-        $respuesta["error"] = "No he podido conectarse a la base de batos: " . $e->getMessage();
-        return $respuesta;
-    }
-
-    try {
-        $consulta = "select notas.nota, asignaturas.denominacion, notas.cod_asig from notas join asignaturas on notas.cod_asig = asignaturas.cod_asig where cod_usu=?";
-        $sentencia = $conexion->prepare($consulta);
-        $sentencia->execute([$id_alumno]);
-    } catch (PDOException $e) {
-        $sentencia = null;
-        $conexion = null;
-        $respuesta["error"] = "No he podido realizarse la consulta: " . $e->getMessage();
-        return $respuesta;
-    }
-
-    if ($sentencia->rowCount() > 0) {
-        $respuesta["notas_alumno"] = $sentencia->fetchAll(PDO::FETCH_ASSOC);
-    } else
-        $respuesta["mensaje"] = "El usuario no tiene notas en la BD";
+        $respuesta["mensaje"] = "No hay alumnos registrados en la BD";
 
     $sentencia = null;
     $conexion = null;
@@ -167,9 +165,14 @@ function notasNoEvalAlumno($id_alumno)
         $respuesta["error"] = "No he podido conectarse a la base de batos: " . $e->getMessage();
         return $respuesta;
     }
-
     try {
-        $consulta = "SELECT * from asignaturas where asignaturas.cod_asig NOT IN(select notas.cod_asig from notas join usuarios on notas.cod_usu = usuarios.cod_usu where notas.cod_usu=?)";
+        $consulta = "SELECT cod_asig, denominacion
+                        FROM asignaturas
+                        WHERE cod_asig NOT IN (
+                            SELECT cod_asig
+                            FROM notas
+                            WHERE cod_usu = ?
+                        );";
         $sentencia = $conexion->prepare($consulta);
         $sentencia->execute([$id_alumno]);
     } catch (PDOException $e) {
@@ -178,18 +181,17 @@ function notasNoEvalAlumno($id_alumno)
         $respuesta["error"] = "No he podido realizarse la consulta: " . $e->getMessage();
         return $respuesta;
     }
-
     if ($sentencia->rowCount() > 0) {
-        $respuesta["notas_alumno"] = $sentencia->fetchAll(PDO::FETCH_ASSOC);
+        $respuesta["notas_no_eval"] = $sentencia->fetchAll(PDO::FETCH_ASSOC);
     } else
-        $respuesta["mensaje"] = "Al usuario no le quedan asignaturas por calificar";
+        $respuesta["mensaje"] = "El alumno no tiene notas por calificar;";
 
     $sentencia = null;
     $conexion = null;
     return $respuesta;
 }
 
-function ponerNota($datos_nota)
+function borrarNota($id_alumno, $id_asignatura)
 {
     try {
         $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
@@ -197,25 +199,27 @@ function ponerNota($datos_nota)
         $respuesta["error"] = "No he podido conectarse a la base de batos: " . $e->getMessage();
         return $respuesta;
     }
-
     try {
-        $consulta = "INSERT INTO notas(cod_usu, cod_asig, nota) VALUES (?,?,0)";
+        $consulta = "DELETE FROM notas WHERE cod_usu=? AND cod_asig=?";
         $sentencia = $conexion->prepare($consulta);
-        $sentencia->execute($datos_nota);
+        $sentencia->execute([$id_alumno, $id_asignatura]);
     } catch (PDOException $e) {
         $sentencia = null;
         $conexion = null;
         $respuesta["error"] = "No he podido realizarse la consulta: " . $e->getMessage();
         return $respuesta;
     }
+    if ($sentencia->rowCount() > 0) {
+        $respuesta["mensaje"] = "Nota eliminada correctamente";
+    } else
+        $respuesta["mensaje"] = "No se ha podido eliminar la nota";
 
-    $respuesta["mensaje"] = "Nota insertada correctamente";
     $sentencia = null;
     $conexion = null;
     return $respuesta;
 }
 
-function quitarNota($datos_nota)
+function calificar($id_alumno, $id_asignatura)
 {
     try {
         $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
@@ -223,25 +227,27 @@ function quitarNota($datos_nota)
         $respuesta["error"] = "No he podido conectarse a la base de batos: " . $e->getMessage();
         return $respuesta;
     }
-
     try {
-        $consulta = "DELETE FROM notas where cod_usu=? and cod_asig=?";
+        $consulta = "INSERT INTO notas (cod_usu, cod_asig, nota) VALUES (?, ?, 0)";
         $sentencia = $conexion->prepare($consulta);
-        $sentencia->execute($datos_nota);
+        $sentencia->execute([$id_alumno, $id_asignatura]);
     } catch (PDOException $e) {
         $sentencia = null;
         $conexion = null;
         $respuesta["error"] = "No he podido realizarse la consulta: " . $e->getMessage();
         return $respuesta;
     }
+    if ($sentencia->rowCount() > 0) {
+        $respuesta["mensaje"] = "Nota calificada correctamente";
+    } else
+        $respuesta["mensaje"] = "No se ha podido calificar la nota";
 
-    $respuesta["mensaje"] = "Nota quitada correctamente";
     $sentencia = null;
     $conexion = null;
     return $respuesta;
 }
 
-function cambiarNota($datos_nota)
+function cambiarNota($id_alumno, $id_asignatura, $nota)
 {
     try {
         $conexion = new PDO("mysql:host=" . SERVIDOR_BD . ";dbname=" . NOMBRE_BD, USUARIO_BD, CLAVE_BD, array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
@@ -249,19 +255,21 @@ function cambiarNota($datos_nota)
         $respuesta["error"] = "No he podido conectarse a la base de batos: " . $e->getMessage();
         return $respuesta;
     }
-
     try {
-        $consulta = "UPDATE notas set nota=? where cod_usu=? and cod_asig=?";
+        $consulta = "UPDATE notas SET nota=? where cod_usu=? and cod_asig=?";
         $sentencia = $conexion->prepare($consulta);
-        $sentencia->execute($datos_nota);
+        $sentencia->execute([$nota, $id_alumno, $id_asignatura]);
     } catch (PDOException $e) {
         $sentencia = null;
         $conexion = null;
         $respuesta["error"] = "No he podido realizarse la consulta: " . $e->getMessage();
         return $respuesta;
     }
+    if ($sentencia->rowCount() > 0) {
+        $respuesta["mensaje"] = "Asignatura calificada con un " . $nota . " correctamente";
+    } else
+        $respuesta["mensaje"] = "No se ha podido cambiar la nota";
 
-    $respuesta["mensaje"] = "Nota cambiada correctamente";
     $sentencia = null;
     $conexion = null;
     return $respuesta;

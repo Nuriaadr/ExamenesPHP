@@ -1,20 +1,18 @@
 <?php
-
 $url_notas = DIR_API_COLEGIO . '/notasAlumno/' . $datos_usu_log['cod_usu'];
 $respuesta_notas = consumir_servicios_JWT_REST($url_notas, 'GET', $headers);
 $json_notas = json_decode($respuesta_notas, true);
 
 if (!$json_notas) {
-    session_destroy();
-    die(error_page("Examen Final PHP", "<h1>Examen Final PHP</h1><p>Error consumiendo el servicio Rest: <strong>" . $url_notas . "</strong></p>"));
+    die(error_page("Examen Final PHP", "<h1>Examen Final PHP</h1><p>Error consumiendo el servicio Rest: <strong>" . $url . "</strong></p>"));
 }
 if (isset($json_notas["error"])) {
-    session_destroy();
     die(error_page("Examen Final PHP", "<h1>Examen Final PHP</h1><p>" . $json_notas["error"] . "</p>"));
 }
 if (isset($json_notas["mensaje"])) {
-    $_SESSION["mensaje"] = $json_notas["mensaje"];
+    $_SESSION['mensaje'] = $json_notas['mensaje'];
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -59,26 +57,28 @@ if (isset($json_notas["mensaje"])) {
 
     <h3>Notas del alumno: <?= $datos_usu_log['nombre'] ?></h3>
 
+    <?php
+    if (isset($_SESSION['mensaje'])) {
+        echo $_SESSION['mensaje'];
+        unset($_SESSION['mensaje']);
+    }
+    ?>
     <table>
         <tr>
             <th>Asignatura</th>
             <th>Nota</th>
         </tr>
-        
-            <?php
-            foreach ($json_notas['notas_alumno'] as $nota) {
-                echo "<tr>";
-                echo "<td>" . $nota['denominacion'] . "</td>";
-                echo "<td>" . $nota['nota'] . "</td>";
-                echo "</tr>";
-            }
-            ?>
-    </table>
-    <?php
-        if(isset($_SESSION["mensaje"])){
-            echo "<p>".$_SESSION["mensaje"]."</p>";
+
+        <?php
+        foreach ($json_notas['notas_alum'] as $nota) {
+            echo "<tr>";
+            echo "<td>" . $nota['denominacion'] . "</td>";
+            echo "<td>" . $nota['nota'] . "</td>";
+            echo "</tr>";
         }
-    ?>
+        ?>
+    </table>
+
 </body>
 
 </html>
