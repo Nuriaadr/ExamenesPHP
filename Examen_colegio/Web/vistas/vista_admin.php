@@ -211,7 +211,6 @@ if (isset($_POST['btnVerNotas']) || isset($_POST['btnCalificar']) || isset($_POS
                 echo "</form>";
                 echo "</td>";
             } else {
-
                 echo "<td>" . $nota['denominacion'] . "</td>";
                 echo "<form action='index.php' method='post'>";
                 echo "<td><input type='text' name='nota' value='" . $nota['nota'] . "'>";
