@@ -111,10 +111,10 @@ if (isset($_POST['btnEquipo'])) {
             echo $_SESSION['mensaje'];
             unset($_SESSION['mensaje']);
         } else {
-            if ($_SESSION['dia'] < 4) {
+            if ($_SESSION['hora'] <= 3) {
                 echo "<h3>" . DIAS[$_SESSION['dia']] . " a " . $_SESSION['hora'] . "ª hora</h3>";
             } else
-                echo "<h3>" . DIAS[$_SESSION['dia'] - 1] . " a " . ($_SESSION['hora'] - 1) . "ª hora</h3>";
+                echo "<h3>" . DIAS[$_SESSION['dia']] . " a " . ($_SESSION['hora'] - 1) . "ª hora</h3>";
 
             echo "<table>";
             echo "<tr>";
@@ -137,7 +137,7 @@ if (isset($_POST['btnEquipo'])) {
 
                 if ($primera) {
                     echo "<td rowspan='$total'>";
-                    if (isset($json_info)) {
+                    if (isset($_POST['btnInfo'])) {
                         echo "<p>";
                         echo "<strong>Nombre:</strong> " . $json_info['usuario']['nombre'] . "<br>";
                         echo "<strong>Email:</strong> " . ($json_info['usuario']['email'] ?? 'No disponible') . "<br>";
