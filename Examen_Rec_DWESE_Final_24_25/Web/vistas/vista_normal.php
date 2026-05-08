@@ -38,28 +38,39 @@
             ?>
         </tr>
 
+
         <?php
-        $nombre_aula = [];
+        $aula_libre = [];
         for ($hora = 1; $hora <= count(HORAS); $hora++) {
             echo "<tr>";
             echo "<th>" . HORAS[$hora] . "</th>";
+
             if ($hora == 4) {
-                echo "<td colspan='" . count(DIAS) . "'>RECREO</td>";
-            } else {
-                for ($dia = 1; $dia <= count(DIAS); $dia++) {
-                    $url_aulas = DIR_SERV . "/aulasLibres/" . $dia . "/" . $hora;
-                    $respuesta_aulas = json_decode(consumir_servicios_JWT_REST($url_aulas, 'get', $headers), true);
-                   
+                echo "<th colspan='5'>RECREO</th>";
+                echo "</tr>";
+                continue;
+            }
 
-                    foreach ($respuesta_aulas['aulas_libres'] as $aula) {
-                        if (isset($nombre_aula[$dia][$hora]['nombre']))
-                            $nombre_aula[$dia][$hora]['nombre'] .= "<br>" . $aula['nombre'];
-                        else
-                            $nombre_aula[$dia][$hora]['nombre'] = $aula['nombre'];
+            for ($dia = 1; $dia <= count(DIAS); $dia++) {
+                $url_aulas = DIR_SERV . "/aulasLibres/" . $dia . "/" . $hora;
+                $respuesta_aulas = consumir_servicios_JWT_REST($url_aulas, 'get', $headers);
+                $json_aulas = json_decode($respuesta_aulas, true);
+
+                if (isset($json_aulas['aulas_libres'])) {
+                    foreach ($json_aulas['aulas_libres'] as $aula) {
+                      
+                        if (isset($aula_libre[$dia][$hora]['nombre'])) {
+                            $aula_libre[$dia][$hora]['nombre'] .= "<br>" . $aula['nombre'];
+                        } else {
+                            $aula_libre[$dia][$hora]['nombre'] = $aula['nombre'];
+                        }
                     }
-
-                    echo "<td>" . $nombre_aula[$dia][$hora]['nombre'] . "</td>";
                 }
+
+                echo "<td>" .  $aula_libre[$dia][$hora]['nombre'] . "</td>";
+
+
+               
             }
 
             echo "</tr>";
